@@ -40,6 +40,7 @@ namespace KarlinScriptNamespace
         uint parse;
         List<uint> P3TetherTarget = new();
         List<string> P3JumpSkill = new();
+        bool isFastLeft = 0;
         public void Init(ScriptAccessory accessory)
         {
             accessory.Method.RemoveDraw(@".*");
@@ -49,13 +50,18 @@ namespace KarlinScriptNamespace
             parse = 1;
             P3TetherTarget = new();
             P3JumpSkill = new();
+            isFastLeft = 0;
 
         }
+
+        // 释放某两个技能分P
         [ScriptMethod(name: "分P", eventType: EventTypeEnum.StartCasting, eventCondition: ["ActionId:regex:^(38036|37963)$"],userControl:false)]
         public void 分P(Event @event, ScriptAccessory accessory)
         {
             parse++;
         }
+
+        // 开始释放 Quadruple Crossing (cast) 0x943C 37948
         [ScriptMethod(name: "扇形引导", eventType: EventTypeEnum.StartCasting, eventCondition: ["ActionId:37948"])]
         public void 扇形引导(Event @event, ScriptAccessory accessory)
         {
@@ -69,12 +75,11 @@ namespace KarlinScriptNamespace
             dp.Radian = float.Pi / 4;
             dp.Color = accessory.Data.DefaultDangerColor;
             dp.Owner = sid;
+            // 将目标始终取位最近的玩家，做一个list，由TargetOrderIndex决定谁离得最近
             dp.TargetResolvePattern = PositionResolvePatternEnum.PlayerNearestOrder;
             dp.TargetOrderIndex = 1;
             dp.DestoryAt = 6000;
             accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Fan, dp);
-
-
 
             dp = accessory.Data.GetDefaultDrawProperties();
             dp.Name = "扇形引导-1-2";
@@ -82,7 +87,6 @@ namespace KarlinScriptNamespace
             dp.Radian = float.Pi / 4;
             dp.Color = accessory.Data.DefaultDangerColor;
             dp.Owner = sid;
-
             dp.TargetResolvePattern = PositionResolvePatternEnum.PlayerNearestOrder;
             dp.TargetOrderIndex = 2;
             dp.DestoryAt = 6000;
@@ -95,7 +99,6 @@ namespace KarlinScriptNamespace
             dp.Radian = float.Pi / 4;
             dp.Color = accessory.Data.DefaultDangerColor;
             dp.Owner = sid;
-
             dp.TargetResolvePattern = PositionResolvePatternEnum.PlayerNearestOrder;
             dp.TargetOrderIndex = 3;
             dp.DestoryAt = 6000;
@@ -108,7 +111,6 @@ namespace KarlinScriptNamespace
             dp.Radian = float.Pi / 4;
             dp.Color = accessory.Data.DefaultDangerColor;
             dp.Owner = sid;
-
             dp.TargetResolvePattern = PositionResolvePatternEnum.PlayerNearestOrder;
             dp.TargetOrderIndex = 4;
             dp.DestoryAt = 6000;
@@ -123,6 +125,7 @@ namespace KarlinScriptNamespace
             dp.Owner = sid;
             dp.TargetResolvePattern = PositionResolvePatternEnum.PlayerNearestOrder;
             dp.TargetOrderIndex = 1;
+            // Delay延时，可以决定SendDraw后多久画画
             dp.Delay = 6000 + Interval;
             dp.DestoryAt = 3000 - Interval;
             accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Fan, dp);
@@ -135,7 +138,6 @@ namespace KarlinScriptNamespace
             dp.Radian = float.Pi / 4;
             dp.Color = accessory.Data.DefaultDangerColor;
             dp.Owner = sid;
-
             dp.TargetResolvePattern = PositionResolvePatternEnum.PlayerNearestOrder;
             dp.TargetOrderIndex = 2;
             dp.Delay = 6000 + Interval;
@@ -149,7 +151,6 @@ namespace KarlinScriptNamespace
             dp.Radian = float.Pi / 4;
             dp.Color = accessory.Data.DefaultDangerColor;
             dp.Owner = sid;
-
             dp.TargetResolvePattern = PositionResolvePatternEnum.PlayerNearestOrder;
             dp.TargetOrderIndex = 3;
             dp.Delay = 6000 + Interval;
@@ -163,7 +164,6 @@ namespace KarlinScriptNamespace
             dp.Radian = float.Pi / 4;
             dp.Color = accessory.Data.DefaultDangerColor;
             dp.Owner = sid;
-
             dp.TargetResolvePattern = PositionResolvePatternEnum.PlayerNearestOrder;
             dp.TargetOrderIndex = 4;
             dp.Delay = 6000 + Interval;
@@ -171,12 +171,14 @@ namespace KarlinScriptNamespace
             accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Fan, dp);
         }
 
+        // 根据逻辑，上一个method是完成了1与2的画画。触发器一次性送出2*4幅画，其中后4幅加入Delay，是第2轮的效果。
+        // 这里为什么不需要写任何dp参数呢？
+        // 此处的猜测是，二段扇形引导的sid不是黑猫，而是他产生的无数分身，并且自带了旋转角度，所以不需要额外填写。
+        // Quadruple Crossing (damage) 0x9440 37952
         [ScriptMethod(name: "扇形引导二段", eventType: EventTypeEnum.StartCasting, eventCondition: ["ActionId:37952"])]
         public void 扇形引导二段(Event @event, ScriptAccessory accessory)
         {
             if (!ParseObjectId(@event["SourceId"], out var sid)) return;
-
-
             var dp = accessory.Data.GetDefaultDrawProperties();
             dp.Name = "扇形引导二段";
             dp.Scale = new(100);
@@ -187,6 +189,10 @@ namespace KarlinScriptNamespace
             accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Fan, dp);
         }
 
+        // 37947 0x943B 第一刀左 isleft isfast
+        // 37943 0x9437 第一刀右 ------ isfast
+        // 37944 0x9438 第二刀左 isleft ------
+        // 37946 0x943A 第二刀右 ------ ------
         [ScriptMethod(name: "左右刀", eventType: EventTypeEnum.StartCasting, eventCondition: ["ActionId:regex:^3794[3467]$"])]
         public void 左右刀(Event @event, ScriptAccessory accessory)
         {
@@ -207,6 +213,19 @@ namespace KarlinScriptNamespace
             accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Rect, dp);
         }
 
+        [ScriptMethod(name: "捕捉本体左右刀", eventType: EventTypeEnum.StartCasting, eventCondition: ["ActionId:regex:^3794[37]$"])]
+        public void 捕捉左右刀(Event @event, ScriptAccessory accessory)
+        {
+            if (!ParseObjectId(@event["SourceId"], out var sid)) return;
+            var idStr = @event["ActionId"];
+            isFastLeft = (idStr == "37947");
+        }
+
+        // 37993 0x9469 第一刀左 isleft isfast
+        // 37989 0x9465 第一刀右 ------ isfast
+        // 37990 0x9466 第二刀左 isleft ------
+        // 37992 0x9468 第二刀右 ------ ------
+        // 这是那个后面接分摊的机制
         [ScriptMethod(name: "分身左右刀", eventType: EventTypeEnum.StartCasting, eventCondition: ["ActionId:regex:^(37989|3799[023])$"])]
         public void 分身左右刀(Event @event, ScriptAccessory accessory)
         {
@@ -225,27 +244,29 @@ namespace KarlinScriptNamespace
             dp.Delay = isfast ? 0 : 6000;
             dp.DestoryAt = isfast ? 6000 : 3000;
             accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Rect, dp);
+            string direction = isFastLeft == 1 ? "左正" : "右斜";
+            accessory.Method.TextInfo($"脑海里出现【{direction}】的想法……", 6000);
         }
 
+        // 37965 0x944D 左跳右刀 左西，场外 => 场内
+        // 37966 0x944E 左跳左刀 左西，场内 => 场外
+        // 37967 0x944F 右跳右刀 右东，场内 => 场外
+        // 37968 0x9450 右跳左刀 右东，场外 => 场内
         [ScriptMethod(name: "跳跃左右刀", eventType: EventTypeEnum.StartCasting, eventCondition: ["ActionId:regex:^3796[5678]$"])]
         public void 跳跃左右刀(Event @event, ScriptAccessory accessory)
         {
-            //37965左跳右刀
-            //37966左跳左刀
-            //37967右跳右刀
-            //37968右跳左刀
             var actionId = @event["ActionId"];
             var pos = JsonConvert.DeserializeObject<Vector3>(@event["SourcePosition"]);
             var leftJump = (actionId == "37965" || actionId == "37966");
-            var leftFast= (actionId == "37966" || actionId == "37968");
+            var leftFast = (actionId == "37966" || actionId == "37968");
             Vector3 dv;
             if (leftJump) dv = new(-10, 0, 0);
             else dv = new(10, 0, 0);
 
             var dp = accessory.Data.GetDefaultDrawProperties();
             dp.Name = $"跳跃左右刀-{(leftJump?"左":"右")}跳{(leftFast ? "左" : "右")}刀快";
-            dp.Position=pos+dv;
-            dp.Scale = new(60,30);
+            dp.Position = pos + dv;
+            dp.Scale = new(60, 30);
             dp.Rotation = leftFast? float.Pi / -2: float.Pi / 2;
             dp.Color = accessory.Data.DefaultDangerColor.WithW(3); ;
             dp.DestoryAt = 7000;
@@ -254,32 +275,37 @@ namespace KarlinScriptNamespace
             dp = accessory.Data.GetDefaultDrawProperties();
             dp.Name = $"跳跃左右刀-{(leftJump ? "左" : "右")}跳{(leftFast ? "右" : "左")}刀慢";
             dp.Position = pos + dv;
-            dp.Scale = new(60,30);
+            dp.Scale = new(60, 30);
             dp.Rotation = leftFast ? float.Pi / 2 : float.Pi / -2;
             dp.Color = accessory.Data.DefaultDangerColor.WithW(3); ;
             dp.Delay = 7000;
             dp.DestoryAt = 2000;
             accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Rect, dp);
-
-
         }
+
+        // 38959 0x982F 右跳扇形
+        // 37975 0x9457 左跳扇形
         [ScriptMethod(name: "跳跃扇形引导", eventType: EventTypeEnum.StartCasting, eventCondition: ["ActionId:regex:^(38959|37975)$"])]
         public void 跳跃扇形引导(Event @event, ScriptAccessory accessory)
         {
-            //38959右扇
-            //37975左扇
+            // 获得当前的位置
             var pos = JsonConvert.DeserializeObject<Vector3>(@event["SourcePosition"]);
+            
+            // 如果是左跳，X轴向左偏移10，否则向右偏移10，但是……
             Vector3 dv = @event["ActionId"] == "37975" ? new(-10, 0, 0) : new(10, 0, 0);
+            // 若此时Boss位置在X=110，面向场中，那不该让X轴向左偏移10，而是Y轴向下偏移10（+10）
             if (Math.Abs(pos.X-110)<1)
             {
                 dv = @event["ActionId"] == "37975" ? new(0, 0, 10) : new(0, 0, -10);
             }
+            // 同理，若此时Boss位置在X=90，面向场中，那不该让X轴向左偏移10，而是Y轴向上偏移10（-10）
             if (Math.Abs(pos.X - 90) < 1)
             {
                 dv = @event["ActionId"] == "37975" ? new(0, 0, -10) : new(0, 0, 10);
             }
             var Interval = 1000;
 
+            // 计算完偏移坐标后，使画图的扇形起始位置Position设置为(pos + dv)
             var dp = accessory.Data.GetDefaultDrawProperties();
             dp.Name = "扇形引导-1-1";
             dp.Scale = new(100);
@@ -291,8 +317,6 @@ namespace KarlinScriptNamespace
             dp.Delay = 0;
             dp.DestoryAt = 6000;
             accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Fan, dp);
-
-
 
             dp = accessory.Data.GetDefaultDrawProperties();
             dp.Name = "扇形引导-1-2";
@@ -306,7 +330,6 @@ namespace KarlinScriptNamespace
             dp.DestoryAt = 6000;
             accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Fan, dp);
 
-
             dp = accessory.Data.GetDefaultDrawProperties();
             dp.Name = "扇形引导-1-3";
             dp.Scale = new(100);
@@ -318,7 +341,6 @@ namespace KarlinScriptNamespace
             dp.Delay = 0;
             dp.DestoryAt = 6000;
             accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Fan, dp);
-
 
             dp = accessory.Data.GetDefaultDrawProperties();
             dp.Name = "扇形引导-1-4";
@@ -332,7 +354,6 @@ namespace KarlinScriptNamespace
             dp.DestoryAt = 6000;
             accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Fan, dp);
 
-
             dp = accessory.Data.GetDefaultDrawProperties();
             dp.Name = "扇形引导-2-1";
             dp.Scale = new(100);
@@ -344,8 +365,6 @@ namespace KarlinScriptNamespace
             dp.Delay = 6000 + Interval;
             dp.DestoryAt = 3000 - Interval;
             accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Fan, dp);
-
-
 
             dp = accessory.Data.GetDefaultDrawProperties();
             dp.Name = "扇形引导-2-2";
@@ -359,7 +378,6 @@ namespace KarlinScriptNamespace
             dp.DestoryAt = 3000 - Interval;
             accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Fan, dp);
 
-
             dp = accessory.Data.GetDefaultDrawProperties();
             dp.Name = "扇形引导-2-3";
             dp.Scale = new(100);
@@ -372,7 +390,6 @@ namespace KarlinScriptNamespace
             dp.DestoryAt = 3000 - Interval;
             accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Fan, dp);
 
-
             dp = accessory.Data.GetDefaultDrawProperties();
             dp.Name = "扇形引导-2-4";
             dp.Scale = new(100);
@@ -384,15 +401,12 @@ namespace KarlinScriptNamespace
             dp.Delay = 6000 + Interval;
             dp.DestoryAt = 3000 - Interval;
             accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Fan, dp);
-
         }
 
         [ScriptMethod(name: "跳跃扇形引导二段", eventType: EventTypeEnum.StartCasting, eventCondition: ["ActionId:37980"])]
         public void 跳跃扇形引导二段(Event @event, ScriptAccessory accessory)
         {
             if (!ParseObjectId(@event["SourceId"], out var sid)) return;
-
-
             var dp = accessory.Data.GetDefaultDrawProperties();
             dp.Name = "扇形引导二段";
             dp.Scale = new(100);
@@ -403,7 +417,7 @@ namespace KarlinScriptNamespace
             accessory.Method.SendDraw(DrawModeEnum.Default, DrawTypeEnum.Fan, dp);
         }
 
-
+        // 一个新的Method Tether，记录了Boss对分身的连线
         [ScriptMethod(name: "P3连线收集", eventType: EventTypeEnum.Tether, eventCondition: ["Id:0066"], userControl: false)]
         public void 本体连线收集(Event @event, ScriptAccessory accessory)
         {
@@ -611,8 +625,11 @@ namespace KarlinScriptNamespace
         {
             if (!ParseObjectId(@event["TargetId"], out var sid)) return;
 
+            // D3 D2 D1 D4 H1 ST MT H2
+            // 这个意思就是，MT要找D3，ST要找D2，H1要找D1，H2要找D4，这里的参数是搭档的Index，后续同理
+            // 所以该小队列表的顺序应当为MT-ST-H1-H2-D1-D2-D3-D4
             int[] stackGroup = [6, 5, 4, 7, 2, 1, 0, 3];
-            var index= accessory.Data.PartyList.ToList().IndexOf(sid);
+            var index = accessory.Data.PartyList.ToList().IndexOf(sid);
             var myIndex = accessory.Data.PartyList.ToList().IndexOf(accessory.Data.Me);
             var isMyStack = (index == myIndex || myIndex == stackGroup[index]);
 
