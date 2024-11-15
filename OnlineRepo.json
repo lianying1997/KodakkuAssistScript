@@ -2,7 +2,7 @@
 {
     "Name": "M1s绘图",
     "Guid": "8010d865-7d6d-4c23-92e0-f4b0120e18ac",
-    "Version": "0.0.0.5",
+    "Version": "0.0.0.6",
     "Author": "Karlin",
     "DownloadUrl": "https://raw.githubusercontent.com/Karlin-Z/KodakkuAssistScript/main/07-DawnTrail/M1s.cs"
 },
@@ -16,16 +16,18 @@
 {
     "Name": "M3s绘图",
     "Guid": "a7e12eeb-4f05-4b68-8d4f-f64e08b6d7a5",
-    "Version": "0.0.0.1",
+    "Version": "0.0.0.3",
     "Author": "Karlin",
-    "DownloadUrl": "https://raw.githubusercontent.com/Karlin-Z/KodakkuAssistScript/main/07-DawnTrail/M3S.cs"
+    "DownloadUrl": "https://raw.githubusercontent.com/Karlin-Z/KodakkuAssistScript/main/07-DawnTrail/M3S.cs",
+    "UpdateInfo": "1. 组队战冲拳统一标示安全区。\n2. 修改分摊伙伴适配国服。"
 },
 {
     "Name": "M4s绘图",
     "Guid": "e7f7c69b-cc82-4b74-b1ea-2f3f0eecb2e2",
-    "Version": "0.0.0.2",
+    "Version": "0.0.0.6",
     "Author": "Karlin",
-    "DownloadUrl": "https://raw.githubusercontent.com/Karlin-Z/KodakkuAssistScript/main/07-DawnTrail/M4S.cs"
+    "DownloadUrl": "https://raw.githubusercontent.com/Karlin-Z/KodakkuAssistScript/main/07-DawnTrail/M4S.cs",
+    "UpdateInfo": "1. 修复日出塔角度计算错误。\n2. 修改日出塔引导角度计算错误"
 },
 {
     "Name": "极佐拉加绘图",
@@ -54,5 +56,12 @@
     "Version": "0.0.0.1",
     "Author": "Karlin",
     "DownloadUrl": "https://raw.githubusercontent.com/Karlin-Z/KodakkuAssistScript/main/06-EndWalker/%E5%A4%9A%E5%8F%98%E8%BF%B7%E5%AE%AB%E8%87%AA%E5%8A%A8%E5%8C%96.cs"
+},
+{
+    "Name": "金碟小助手",
+    "Guid": "9eed3085-cb11-738a-7e06-5ba0aa67363c",
+    "Version": "0.0.0.1",
+    "Author": "Karlin",
+    "DownloadUrl": "https://raw.githubusercontent.com/Karlin-Z/KodakkuAssistScript/main/00-Misc/%E9%87%91%E7%A2%9F%E5%B0%8F%E5%8A%A9%E6%89%8B.cs"
 }
 ]
